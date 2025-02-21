@@ -19,7 +19,7 @@ async def start_command(message: types.Message):
         user_id = message.from_user.id
         if user_id not in user_groups:
             user_groups[user_id] = []
-        logger.info(f"Foydalanuvchi {user_id} /start yozdi")
+        logger.info(f"Foydalanuvchi {user_id} /start yozdi, user_groups: {user_groups}")
         await message.reply(f"Salom! Meni guruhga qo‘shing va admin qiling.\nSizning ID’ingiz: {user_id}")
     else:
         logger.info(f"Guruhda /start ishlatildi: {message.chat.id}")
@@ -35,7 +35,12 @@ async def handle_chat_member_update(update: types.ChatMemberUpdated):
             user_groups[added_by] = []
         if group_id not in user_groups[added_by]:
             user_groups[added_by].append(group_id)
-            await bot.send_message(added_by, f"Men {update.chat.title} guruhiga qo‘shildim!")
+            logger.info(f"user_groups yangilandi: {user_groups}")
+            try:
+                await bot.send_message(added_by, f"Men {update.chat.title} guruhiga qo‘shildim!")
+                logger.info(f"Qo‘shilish xabari {added_by} ga yuborildi")
+            except Exception as e:
+                logger.error(f"Qo‘shilish xabarini yuborishda xato: {e}")
 
 @dp.message()
 async def handle_message(message: types.Message):
@@ -46,15 +51,22 @@ async def handle_message(message: types.Message):
         text = message.text or "Matn yo‘q"
         group_name = message.chat.title
         logger.info(f"Guruh xabari: {group_id}, Matn: {text}, Foydalanuvchi: {user_id}")
+        logger.info(f"Joriy user_groups: {user_groups}")
+        
         for owner_id, groups in user_groups.items():
             if group_id in groups:
                 logger.info(f"{owner_id} ga xabar yuborilmoqda")
                 try:
-                    await bot.send_message(owner_id, f"Guruh: {group_name}\nID: {user_id}\nUsername: @{username}\nXabar: {text}")
+                    await bot.send_message(
+                        owner_id,
+                        f"Guruh: {group_name}\nID: {user_id}\nUsername: @{username}\nXabar: {text}"
+                    )
                     logger.info(f"Xabar {owner_id} ga muvaffaqiyatli yuborildi")
                 except Exception as e:
                     logger.error(f"Xabar yuborishda xato: {e}")
                 break
+        else:
+            logger.warning(f"{group_id} guruhi hech kimning ro‘yxatida topilmadi")
 
 async def main():
     logger.info("Bot polling rejimida boshlanmoqda")
