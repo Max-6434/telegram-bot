@@ -27,6 +27,7 @@ async def start_command(message: types.Message):
 
 @dp.chat_member()
 async def handle_chat_member_update(update: types.ChatMemberUpdated):
+    logger.info(f"Chat member yangilanishi: {update.new_chat_member.user.id}, Status: {update.new_chat_member.status}")
     if update.new_chat_member.user.id == bot.id and update.new_chat_member.status == "member":
         group_id = update.chat.id
         added_by = update.from_user.id
