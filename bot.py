@@ -25,7 +25,7 @@ async def start_command(message: types.Message):
         logger.info(f"Guruhda /start ishlatildi: {message.chat.id}")
         await message.reply("Guruhda salom! Meni admin qiling.")
 
-@dp.chat_member()
+@dp.my_chat_member()
 async def handle_chat_member_update(update: types.ChatMemberUpdated):
     logger.info(f"Chat member yangilanishi: {update.new_chat_member.user.id}, Status: {update.new_chat_member.status}")
     if update.new_chat_member.user.id == bot.id and update.new_chat_member.status == "member":
